@@ -1,6 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
 from fastapi.responses import HTMLResponse
-import subprocess
 
 app = FastAPI()
 
@@ -23,5 +22,18 @@ def home():
 
 @app.get("/start")
 def start_cloak():
+    import subprocess
     subprocess.Popen(["python", "cloak_ai_gpu.py"])
     return {"message": "Cloak started! Check your Python window for the live cloak feed."}
+
+# WebSocket endpoint
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        while True:
+            data = await websocket.receive_text()
+            # Here you can send real-time data from your cloak system
+            await websocket.send_text(f"Message received: {data}")
+    except Exception as e:
+        print("WebSocket connection closed:", e)
